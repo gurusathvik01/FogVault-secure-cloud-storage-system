@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{% block title %}Admin — FogVault{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,system-ui;
+  background:#020617;
+  color:#e5e7eb;
+}
+
+/* TOP BAR */
+.topbar{
+  height:64px;
+  display:flex;
+  align-items:center;
+  padding:0 24px;
+  background:#020617;
+  border-bottom:1px solid #1e293b;
+}
+
+.brand{
+  font-weight:800;
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.nav-links{
+  margin-left:30px;
+  display:flex;
+  gap:20px;
+}
+
+.nav-links a{
+  color:#94a3b8;
+  text-decoration:none;
+  font-weight:600;
+}
+.nav-links a.active{color:#38bdf8}
+
+.right{
+  margin-left:auto;
+}
+.logout{
+  background:#ef4444;
+  color:white;
+  padding:8px 14px;
+  border-radius:8px;
+  text-decoration:none;
+  font-weight:600;
+}
+
+/* PAGE */
+.container{
+  padding:28px;
+  max-width:1400px;
+  margin:auto;
+}
+
+/* CARDS */
+.card{
+  background:#020617;
+  border:1px solid #1e293b;
+  border-radius:16px;
+  padding:20px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:20px;
+}
+
+/* TABLE */
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+th,td{
+  padding:14px;
+  border-bottom:1px solid #1e293b;
+  text-align:left;
+}
+th{
+  color:#94a3b8;
+  font-size:13px;
+}
+tr:hover{background:#020617}
+
+/* BUTTONS */
+.btn{
+  padding:6px 12px;
+  border-radius:8px;
+  font-weight:600;
+  border:none;
+  cursor:pointer;
+}
+.btn-danger{background:#7f1d1d;color:#fecaca}
+.btn-success{background:#064e3b;color:#6ee7b7}
+.btn-dark{background:#020617;color:#e5e7eb;border:1px solid #1e293b}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <div class="brand">🛡 FogVault Admin</div>
+
+  <div class="nav-links">
+    <a href="/admin-panel/dashboard/">Overview</a>
+<a href="/admin-panel/users/">Users</a>
+<a href="/admin-panel/logs/">Logs</a>
+<a href="/admin-panel/trash/">Trash</a>
+<a href="/admin-panel/audit/">Audit</a>
+
+
+  </div>
+
+  <div class="right">
+    <a href="/logout/" class="logout">Logout</a>
+  </div>
+</div>
+
+<div class="container">
+  {% block content %}{% endblock %}
+</div>
+
+</body>
+</html>

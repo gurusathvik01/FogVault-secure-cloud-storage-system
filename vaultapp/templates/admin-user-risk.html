@@ -1,0 +1,86 @@
+{% extends "admin-base.html" %}
+
+{% block title %}
+Risk Trend — {{ target_user.username }}
+{% endblock %}
+
+{% block content %}
+
+<h2>📈 Risk Trend: {{ target_user.username }}</h2>
+
+{% if trend_labels %}
+  <canvas id="riskChart" height="120"></canvas>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- SAFE JSON DATA -->
+  {{ trend_labels|json_script:"trend-labels" }}
+  {{ trend_scores|json_script:"trend-scores" }}
+
+  <script>
+    const labels = JSON.parse(
+      document.getElementById("trend-labels").textContent
+    );
+
+    const scores = JSON.parse(
+      document.getElementById("trend-scores").textContent
+    );
+
+    const ctx = document.getElementById("riskChart").getContext("2d");
+
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "Risk Score",
+          data: scores,
+          borderColor: "#ef4444",
+          backgroundColor: "rgba(239, 68, 68, 0.15)",
+          tension: 0.4,
+          fill: true,
+          pointRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 10 } }
+        }
+      }
+    });
+  </script>
+{% else %}
+  <p style="color:#9ca3af;margin-top:10px">
+    No risk activity recorded yet for this user.
+  </p>
+{% endif %}
+
+<hr>
+
+<h3>🧠 Risk Reasons</h3>
+<ul>
+  {% for reason in risk.reasons %}
+    <li>{{ reason }}</li>
+  {% empty %}
+    <li>No risk reasons detected</li>
+  {% endfor %}
+</ul>
+
+<hr>
+
+<h3>🕒 Activity Timeline</h3>
+<ul>
+  {% for log in timeline %}
+    <li>
+      {{ log.timestamp|date:"d M Y H:i" }} —
+      <b>{{ log.action }}</b>
+    </li>
+  {% empty %}
+    <li>No activity logs available</li>
+  {% endfor %}
+</ul>
+
+{% endblock %}

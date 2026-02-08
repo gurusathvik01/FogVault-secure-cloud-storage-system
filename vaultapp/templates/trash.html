@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %}FogVault — Trash{% endblock %}
+
+{% block content %}
+
+<meta name="csrf-token" content="{{ csrf_token }}">
+
+<div class="card">
+
+  <h2>Trash</h2>
+  <p class="muted">Files here will be permanently deleted after 3 days.</p>
+
+  <!-- BULK BAR -->
+  <div id="bulkBar"
+       style="display:none;
+              background:#fee2e2;
+              padding:10px;
+              border-radius:10px;
+              margin-bottom:14px;
+              align-items:center;
+              gap:10px">
+
+    <strong id="selectedCount">0 selected</strong>
+
+    <button onclick="bulkRestore()"
+            class="restore"
+            style="margin-left:auto">
+      ♻ Restore
+    </button>
+
+    <button onclick="bulkDeleteForever()"
+            class="delete">
+      🗑 Delete forever
+    </button>
+  </div>
+
+  {% if trash_files %}
+
+    <!-- SELECT ALL -->
+    <div class="file-row" style="font-weight:600">
+      <input type="checkbox" id="selectAll" style="margin-right:10px">
+      Select all
+    </div>
+
+    {% for f in trash_files %}
+    <div class="file-row item">
+
+      <!-- CHECKBOX -->
+      <input type="checkbox"
+             class="bulk-check"
+             value="{{ f.id }}"
+             style="margin-right:10px">
+
+      <div>
+        <strong>{{ f.file.name|cut:"secure_files/" }}</strong><br>
+        <span class="muted">
+          Deleted {{ f.deleted_at|date:"d M Y, h:i A" }}
+        </span>
+      </div>
+
+      <div class="actions">
+        <a href="#"
+           class="restore restore-btn"
+           data-url="{% url 'restore_file' f.id %}">
+          Restore
+        </a>
+
+        <a href="#"
+           class="delete delete-forever-btn"
+           data-url="{% url 'permanent_delete' f.id %}">
+          Delete forever
+        </a>
+      </div>
+
+    </div>
+    {% endfor %}
+
+  {% else %}
+    <p class="muted">Trash is empty.</p>
+  {% endif %}
+
+</div>
+
+<script>
+const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+const bulkBar = document.getElementById("bulkBar");
+const countText = document.getElementById("selectedCount");
+
+/* UPDATE BULK UI */
+function updateBulkUI(){
+  const checked = document.querySelectorAll(".bulk-check:checked");
+  if(checked.length){
+    bulkBar.style.display = "flex";
+    countText.innerText = `${checked.length} selected`;
+  }else{
+    bulkBar.style.display = "none";
+  }
+}
+
+document.querySelectorAll(".bulk-check").forEach(cb =>
+  cb.addEventListener("change", updateBulkUI)
+);
+
+/* SELECT ALL */
+document.getElementById("selectAll").addEventListener("change", e => {
+  document.querySelectorAll(".bulk-check").forEach(cb => {
+    cb.checked = e.target.checked;
+  });
+  updateBulkUI();
+});
+
+/* SINGLE RESTORE */
+document.querySelectorAll(".restore-btn").forEach(btn => {
+  btn.onclick = e => {
+    e.preventDefault();
+    openModal(
+      "Restore File",
+      "Restore this file back to Files?",
+      btn.dataset.url
+    );
+  };
+});
+
+/* SINGLE DELETE FOREVER */
+document.querySelectorAll(".delete-forever-btn").forEach(btn => {
+  btn.onclick = e => {
+    e.preventDefault();
+    openModal(
+      "Delete Forever",
+      "This will permanently delete the file. This action cannot be undone.",
+      btn.dataset.url,
+      true
+    );
+  };
+});
+
+/* BULK RESTORE */
+async function bulkRestore(){
+  const ids = [...document.querySelectorAll(".bulk-check:checked")].map(cb => cb.value);
+  if(!ids.length) return;
+
+  await fetch("/bulk/restore/", {
+    method:"POST",
+    headers:{
+      "X-CSRFToken": csrfToken,
+      "Content-Type":"application/x-www-form-urlencoded"
+    },
+    body: ids.map(id => `ids[]=${id}`).join("&")
+  });
+
+  location.reload();
+}
+
+/* BULK DELETE FOREVER */
+function bulkDeleteForever(){
+  const ids = [...document.querySelectorAll(".bulk-check:checked")].map(cb => cb.value);
+  if(!ids.length) return;
+
+  openModal(
+    "Delete Files Forever",
+    `Permanently delete ${ids.length} files?`,
+    "#",
+    true
+  );
+
+  document.getElementById("modal-action").onclick = async () => {
+    await fetch("/bulk/permanent-delete/", {
+      method:"POST",
+      headers:{
+        "X-CSRFToken": csrfToken,
+        "Content-Type":"application/x-www-form-urlencoded"
+      },
+      body: ids.map(id => `ids[]=${id}`).join("&")
+    });
+    location.reload();
+  };
+}
+</script>
+
+{% endblock %}

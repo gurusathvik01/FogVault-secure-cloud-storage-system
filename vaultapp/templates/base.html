@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{% block title %}FogVault{% endblock %}</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Inter,system-ui;
+  background:#f4f7fb;
+  color:#111827;
+}
+
+/* NAVBAR */
+.nav{
+  background:#2563eb;
+  color:#fff;
+  padding:14px 24px;
+  display:flex;
+  align-items:center;
+}
+.nav h1{
+  font-size:18px;
+  margin:0;
+  font-weight:700;
+}
+.nav a{
+  color:#fff;
+  text-decoration:none;
+  margin-left:20px;
+  font-weight:600;
+}
+.nav .right{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+}
+
+/* LAYOUT */
+.container{
+  max-width:1100px;
+  margin:30px auto;
+  padding:0 20px;
+}
+
+.card{
+  background:#fff;
+  border-radius:14px;
+  padding:22px;
+  box-shadow:0 15px 35px rgba(0,0,0,.08);
+}
+
+/* FILE ROW */
+.file-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 0;
+  border-bottom:1px solid #eef2ff;
+}
+.file-row:last-child{border-bottom:none}
+
+.file-row img{
+  border:1px solid #e5e7eb;
+}
+
+/* ACTIONS */
+.actions a{
+  margin-left:14px;
+  font-weight:600;
+  text-decoration:none;
+}
+
+.open{color:#2563eb}
+.delete{color:#dc2626}
+.restore{color:#16a34a}
+
+.muted{
+  color:#6b7280;
+  font-size:14px;
+}
+
+/* MODAL */
+#modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  z-index:1000;
+}
+
+.modal-box{
+  background:#fff;
+  padding:24px;
+  border-radius:14px;
+  max-width:420px;
+  margin:15% auto;
+  box-shadow:0 20px 40px rgba(0,0,0,.2);
+}
+
+.modal-actions{
+  margin-top:20px;
+  text-align:right;
+}
+
+.modal-actions button,
+.modal-actions a{
+  padding:8px 14px;
+  border-radius:8px;
+  font-weight:600;
+  text-decoration:none;
+  border:none;
+  cursor:pointer;
+}
+
+.modal-actions button{
+  background:#f3f4f6;
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="nav">
+  <h1>☁ FogVault</h1>
+
+  <a href="/upload/">Upload</a>
+  <a href="/files/">Files</a>
+  <a href="/starred/"> Starred</a>
+  <a href="/history/">History</a>
+  <a href="/trash/">Trash</a>
+  <a href="/audit/">🛡 Audit</a>
+  
+
+
+  <!-- ✅ FINAL RIGHT SIDE (FIXED & SECURE) -->
+  <div class="right">
+    <span style="margin-right:14px;font-weight:600">
+      {{ request.user.username }}
+    </span>
+
+    <form method="POST" action="/logout/" style="margin:0">
+      {% csrf_token %}
+      <button type="submit"
+              style="
+                background:rgba(255,255,255,0.15);
+                border:1px solid rgba(255,255,255,0.25);
+                padding:8px 14px;
+                border-radius:8px;
+                color:#fff;
+                font-weight:600;
+                cursor:pointer;
+              ">
+        Logout
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- PAGE CONTENT -->
+<div class="container">
+  {% block content %}{% endblock %}
+</div>
+
+<!-- MODAL -->
+<div id="modal">
+  <div class="modal-box">
+    <h3 id="modal-title"></h3>
+    <p id="modal-text" class="muted"></p>
+
+    <div class="modal-actions">
+      <button onclick="closeModal()">Cancel</button>
+      <a id="modal-action">Confirm</a>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SCRIPT -->
+<script>
+function openModal(title, text, url, danger=false){
+  document.getElementById('modal').style.display = 'block';
+  document.getElementById('modal-title').innerText = title;
+  document.getElementById('modal-text').innerText = text;
+
+  const action = document.getElementById('modal-action');
+  action.href = url;
+  action.style.color = danger ? '#dc2626' : '#16a34a';
+}
+
+function closeModal(){
+  document.getElementById('modal').style.display = 'none';
+}
+</script>
+
+</body>
+</html>

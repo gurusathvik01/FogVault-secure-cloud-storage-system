@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}FogVault — History{% endblock %}
+
+{% block content %}
+<div class="card">
+
+  <h2>Upload History</h2>
+  <p class="muted">Complete activity log</p>
+
+  <input id="search"
+         placeholder="Search history..."
+         style="width:100%;padding:10px;margin:14px 0;
+                border-radius:8px;border:1px solid #dbeafe">
+
+  {% if history %}
+    {% for f in history %}
+    <div class="file-row item">
+      <div>
+        <strong>{{ f.file.name|cut:"secure_files/" }}</strong><br>
+        <span class="muted">
+          {{ f.uploaded_at|date:"l, d M Y • h:i A" }}
+        </span>
+      </div>
+
+      <div class="actions">
+        <a class="open" href="{{ f.file.url }}" target="_blank">Open</a>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <p class="muted">No history yet.</p>
+  {% endif %}
+
+</div>
+
+<script>
+document.getElementById("search").addEventListener("keyup", e => {
+  document.querySelectorAll(".item").forEach(el => {
+    el.style.display =
+      el.innerText.toLowerCase().includes(e.target.value.toLowerCase())
+      ? "flex" : "none";
+  });
+});
+</script>
+{% endblock %}

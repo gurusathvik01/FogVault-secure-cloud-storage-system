@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}FogVault — Audit Log{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+  <h2>Audit Log</h2>
+  <p class="muted">Complete activity timeline (forensic record)</p>
+
+  <!-- FILTER BAR -->
+  <div style="display:flex;gap:10px;margin:14px 0">
+
+    <input id="search"
+           placeholder="Search file name…"
+           style="flex:1;padding:10px;border-radius:8px;border:1px solid #dbeafe">
+
+    <select id="filter"
+            style="padding:10px;border-radius:8px;border:1px solid #dbeafe">
+      <option value="">All actions</option>
+      <option>UPLOAD</option>
+      <option>OPEN</option>
+      <option>STAR</option>
+      <option>UNSTAR</option>
+      <option>DELETE</option>
+      <option>RESTORE</option>
+      <option>PERMANENT_DELETE</option>
+    </select>
+
+  </div>
+
+  {% if logs %}
+    <div id="timeline">
+
+      {% for log in logs %}
+      <div class="log-item"
+           data-action="{{ log.action }}"
+           style="display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #eef2ff">
+
+        <!-- ICON -->
+        <div style="font-size:22px">
+          {% if log.action == "UPLOAD" %}⬆
+          {% elif log.action == "OPEN" %}👁
+          {% elif log.action == "STAR" %}⭐
+          {% elif log.action == "UNSTAR" %}☆
+          {% elif log.action == "DELETE" %}🗑
+          {% elif log.action == "RESTORE" %}♻
+          {% elif log.action == "PERMANENT_DELETE" %}❌
+          {% else %}📄
+          {% endif %}
+        </div>
+
+        <!-- CONTENT -->
+        <div style="flex:1">
+          <strong>{{ log.action }}</strong>
+          {% if log.file %}
+            — {{ log.file.file.name|cut:"secure_files/" }}
+          {% endif %}
+          <br>
+          <span class="muted">
+            {{ log.timestamp|date:"d M Y, h:i:s A" }}
+          </span>
+        </div>
+
+      </div>
+      {% endfor %}
+
+    </div>
+  {% else %}
+    <p class="muted">No audit records found.</p>
+  {% endif %}
+
+</div>
+
+<script>
+/* SEARCH */
+document.getElementById("search").addEventListener("keyup", e => {
+  const val = e.target.value.toLowerCase();
+  document.querySelectorAll(".log-item").forEach(item => {
+    item.style.display =
+      item.innerText.toLowerCase().includes(val) ? "flex" : "none";
+  });
+});
+
+/* FILTER */
+document.getElementById("filter").addEventListener("change", e => {
+  const action = e.target.value;
+  document.querySelectorAll(".log-item").forEach(item => {
+    item.style.display =
+      !action || item.dataset.action === action ? "flex" : "none";
+  });
+});
+</script>
+
+{% endblock %}

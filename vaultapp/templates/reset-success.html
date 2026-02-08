@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Password Updated</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body{
+      margin:0;
+      font-family:Inter, system-ui, sans-serif;
+      background:linear-gradient(180deg,#eef4ff,#f6f8fb);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .card{
+      background:white;
+      padding:32px;
+      border-radius:18px;
+      text-align:center;
+      box-shadow:0 20px 50px rgba(0,0,0,0.1);
+      max-width:420px;
+      width:100%;
+    }
+    h1{
+      font-size:24px;
+      font-weight:800;
+      margin-bottom:10px;
+    }
+    p{
+      font-size:14px;
+      color:#6b7280;
+    }
+    .check{
+      font-size:48px;
+      margin-bottom:12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <div class="check">✅</div>
+    <h1>Password Updated</h1>
+    <p>Your password has been changed successfully.</p>
+    <p>You will be redirected to login shortly.</p>
+  </div>
+
+  <script>
+    setTimeout(() => {
+      window.location.href = "/login/";
+    }, 3000);
+  </script>
+</body>
+</html>

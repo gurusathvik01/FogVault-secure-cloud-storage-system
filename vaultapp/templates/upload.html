@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>FogVault — Upload</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body{
+      margin:0;
+      font-family:Inter, system-ui, sans-serif;
+      background:linear-gradient(180deg,#eef4ff,#f6f8fb);
+      min-height:100vh;
+      color:#0f172a;
+    }
+
+    /* NAVBAR */
+    .nav{
+      height:72px;
+      display:flex;
+      align-items:center;
+      padding:0 24px;
+      background:linear-gradient(90deg,#2563eb,#3b82f6);
+      color:white;
+    }
+
+    .brand{
+      font-weight:800;
+      font-size:18px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    .nav-links{
+      margin-left:28px;
+      display:flex;
+      gap:18px;
+    }
+
+    .nav-links a{
+      color:white;
+      text-decoration:none;
+      font-weight:600;
+      opacity:.9;
+    }
+
+    .nav-links a.active{
+      text-decoration:underline;
+    }
+
+    .nav .right{
+      margin-left:auto;
+      display:flex;
+      align-items:center;
+      gap:14px;
+      font-weight:600;
+    }
+
+    .logout{
+      background:rgba(255,255,255,.15);
+      border:1px solid rgba(255,255,255,.25);
+      padding:8px 14px;
+      border-radius:8px;
+      color:white;
+      cursor:pointer;
+      text-decoration:none;
+    }
+
+    /* PAGE */
+    .wrap{
+      max-width:1100px;
+      margin:32px auto;
+      padding:0 20px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:2fr 1fr;
+      gap:24px;
+    }
+
+    @media(max-width:900px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    .card{
+      background:white;
+      padding:28px;
+      border-radius:18px;
+      box-shadow:0 16px 40px rgba(0,0,0,.08);
+    }
+
+    h1{
+      margin:0 0 6px;
+      font-size:28px;
+      font-weight:800;
+    }
+
+    .subtitle{
+      color:#6b7280;
+      margin-bottom:22px;
+      font-size:14px;
+    }
+
+    /* UPLOAD BOX */
+    .upload-box{
+      border:2px dashed #c7d2fe;
+      padding:46px;
+      border-radius:18px;
+      text-align:center;
+      background:linear-gradient(180deg,#f8fbff,#ffffff);
+      cursor:pointer;
+      transition:.2s;
+    }
+
+    .upload-box.dragover{
+      border-color:#2563eb;
+      background:#eef4ff;
+    }
+
+    .upload-icon{
+      font-size:34px;
+      margin-bottom:10px;
+      color:#2563eb;
+    }
+
+    .btn{
+      margin-top:20px;
+      padding:12px 28px;
+      background:#2563eb;
+      color:white;
+      border:none;
+      border-radius:12px;
+      font-weight:700;
+      font-size:15px;
+      cursor:pointer;
+    }
+
+    .btn:hover{
+      background:#1e40af;
+    }
+
+    .msg{
+      margin-top:14px;
+      font-size:14px;
+      font-weight:600;
+      color:#16a34a;
+    }
+
+    .error{color:#dc2626}
+
+    /* PROGRESS BAR (ADDED ONLY) */
+    #progressBox{
+      display:none;
+      margin-top:18px;
+    }
+
+    #progressOuter{
+      height:10px;
+      background:#e5e7eb;
+      border-radius:999px;
+      overflow:hidden;
+    }
+
+    #progressBar{
+      height:100%;
+      width:0%;
+      background:#2563eb;
+      transition:width .2s;
+    }
+
+    #progressText{
+      margin-top:6px;
+      font-size:13px;
+      color:#475569;
+    }
+
+    /* HOW IT WORKS */
+    .how{
+      margin-top:26px;
+      border-top:1px solid #eef2ff;
+      padding-top:22px;
+    }
+
+    .how-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:14px;
+      font-weight:700;
+    }
+
+    .badge{
+      background:#dcfce7;
+      color:#15803d;
+      padding:6px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .steps{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+      gap:14px;
+    }
+
+    .step{
+      background:#f8fbff;
+      border-radius:14px;
+      padding:16px;
+      text-align:center;
+    }
+
+    .num{
+      width:42px;
+      height:42px;
+      border-radius:50%;
+      background:#2563eb;
+      color:white;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:800;
+      margin:0 auto 10px;
+    }
+
+    /* RIGHT COLUMN */
+    .side-card{
+      background:white;
+      padding:22px;
+      border-radius:18px;
+      box-shadow:0 16px 40px rgba(0,0,0,.08);
+      margin-bottom:18px;
+    }
+
+    .ghost-btn{
+      margin-top:10px;
+      width:100%;
+      padding:10px;
+      border-radius:10px;
+      border:1px solid #dbeafe;
+      background:#f8fbff;
+      cursor:pointer;
+      font-weight:600;
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="nav">
+  <div class="brand">☁ FogVault</div>
+
+  <nav class="nav-links">
+    <a href="/upload/" class="active">Upload</a>
+    <a href="/files/">Files</a>
+    <a href="/starred/">Starred</a>
+    <a href="/history/">History</a>
+    <a href="/trash/">Trash</a>
+    <a href="/audit/">🛡 Audit</a>
+    
+  </nav>
+
+  <div class="right">
+    <span>{{ request.user.username }}</span>
+    <a class="logout" href="/logout/">Logout</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="grid">
+
+    <!-- LEFT -->
+    <div class="card">
+      <h1>Upload File</h1>
+      <div class="subtitle">
+        Upload your files securely with fog computing technology
+      </div>
+
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div id="dropZone" class="upload-box">
+          <div class="upload-icon">⬆</div>
+          <strong id="fileText">Choose a file or drag and drop</strong>
+          <div style="font-size:13px;color:#6b7280;margin-top:6px">
+            Images, videos, documents — all supported
+          </div>
+          <input id="fileInput" type="file" name="file" required style="display:none">
+        </div>
+
+        <button type="submit" class="btn">Upload File</button>
+
+        <!-- PROGRESS BAR (ADDED) -->
+        <div id="progressBox">
+          <div id="progressOuter">
+            <div id="progressBar"></div>
+          </div>
+          <div id="progressText">Uploading…</div>
+        </div>
+      </form>
+
+      {% if messages %}
+        {% for m in messages %}
+          <div class="msg {% if m.tags == 'error' %}error{% endif %}">
+            {{ m }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- HOW IT WORKS (KEPT) -->
+      <div class="how">
+        <div class="how-header">
+          <span>How it works</span>
+          <span class="badge">Redundant XOR</span>
+        </div>
+
+        <div class="steps">
+          <div class="step">
+            <div class="num">1</div>
+            <strong>Upload</strong>
+            <p style="font-size:13px;color:#6b7280">Select your file</p>
+          </div>
+          <div class="step">
+            <div class="num">2</div>
+            <strong>Split</strong>
+            <p style="font-size:13px;color:#6b7280">XOR redundancy</p>
+          </div>
+          <div class="step">
+            <div class="num">3</div>
+            <strong>Store</strong>
+            <p style="font-size:13px;color:#6b7280">Distributed clouds</p>
+          </div>
+          <div class="step">
+            <div class="num">4</div>
+            <strong>Access</strong>
+            <p style="font-size:13px;color:#6b7280">Secure download</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <aside>
+      <div class="side-card">
+        <h3>Upload Status</h3>
+        <p style="font-size:14px;color:#6b7280">
+          Upload securely — progress, history, and file management in one place.
+        </p>
+        <button class="ghost-btn" onclick="location.href='/files/'">
+          View All Files
+        </button>
+      </div>
+
+      <div class="side-card">
+        <h3>Recent uploads</h3>
+
+        {% if recent_files %}
+          <ul style="list-style:none;padding:0;margin-top:14px">
+            {% for f in recent_files %}
+              <li style="
+                background:#f8fafc;
+                padding:12px 14px;
+                border-radius:12px;
+                margin-bottom:10px;
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                font-size:14px;
+              ">
+                <span style="font-weight:600;max-width:65%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                  {{ f.file.name|cut:'secure_files/' }}
+                </span>
+                <a href="{{ f.file.url }}"
+                   target="_blank"
+                   style="font-weight:700;color:#2563eb;text-decoration:none">
+                  Open
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p style="color:#6b7280;font-size:13px;margin-top:10px">
+            No uploads yet
+          </p>
+        {% endif %}
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<script>
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("fileInput");
+const fileText = document.getElementById("fileText");
+const form = document.querySelector("form");
+const progressBox = document.getElementById("progressBox");
+const progressBar = document.getElementById("progressBar");
+const progressText = document.getElementById("progressText");
+
+
+/* DRAG & DROP */
+dropZone.addEventListener("click", () => fileInput.click());
+
+["dragenter","dragover"].forEach(evt => {
+  dropZone.addEventListener(evt, e => {
+    e.preventDefault();
+    dropZone.classList.add("dragover");
+  });
+});
+
+["dragleave","drop"].forEach(evt => {
+  dropZone.addEventListener(evt, e => {
+    e.preventDefault();
+    dropZone.classList.remove("dragover");
+  });
+});
+
+dropZone.addEventListener("drop", e => {
+  if(e.dataTransfer.files.length){
+    fileInput.files = e.dataTransfer.files;
+    fileText.innerText = e.dataTransfer.files[0].name;
+  }
+});
+
+fileInput.addEventListener("change", () => {
+  if(fileInput.files.length){
+    fileText.innerText = fileInput.files[0].name;
+  }
+});
+
+/* UPLOAD PROGRESS */
+form.addEventListener("submit", function(e){
+  e.preventDefault();
+
+  const xhr = new XMLHttpRequest();
+  const formData = new FormData(form);
+
+  xhr.open("POST", window.location.href);
+
+  xhr.upload.onprogress = function(e){
+    if(e.lengthComputable){
+      const percent = Math.round((e.loaded / e.total) * 100);
+      progressBox.style.display = "block";
+      progressBar.style.width = percent + "%";
+      progressText.innerText = "Uploading… " + percent + "%";
+    }
+  };
+
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      progressText.innerText = "Upload complete ✅";
+      progressBar.style.width = "100%";
+      setTimeout(() => location.reload(), 800);
+    } else {
+      progressText.innerText = "Upload failed ❌";
+    }
+  };
+
+  xhr.send(formData);
+});
+</script>
+
+</body>
+</html>

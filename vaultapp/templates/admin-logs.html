@@ -1,0 +1,73 @@
+{% extends "admin-base.html" %}
+{% block title %}Admin — Logs{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>🔍 Audit Logs — Secure Mode</h2>
+
+  <!-- FILTER BAR -->
+  <form method="get" style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap">
+    <input name="action" placeholder="Action (DELETE, LOGIN)"
+           value="{{ active_action }}"/>
+
+    <select name="days">
+      <option value="">All Time</option>
+      <option value="1">Last 24h</option>
+      <option value="7">Last 7 days</option>
+      <option value="30">Last 30 days</option>
+    </select>
+
+    <label>
+      <input type="checkbox" name="risk" {% if risk_only %}checked{% endif %}>
+      Risk only
+    </label>
+
+    <label>
+      <input type="checkbox" name="admin" {% if admin_only %}checked{% endif %}>
+      Admin actions
+    </label>
+
+    <button type="submit">Apply</button>
+    <a href="{% url 'admin_logs' %}">
+      <button type="button">Reset</button>
+    </a>
+  </form>
+
+  <!-- LOG TABLE -->
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>User</th>
+        <th>Action</th>
+        <th>IP</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for log in logs %}
+      <tr
+        {% if 'DELETE' in log.action or 'DISABLE' in log.action %}
+          style="background:rgba(239,68,68,0.12);"
+        {% elif 'FLAG' in log.action %}
+          style="background:rgba(245,158,11,0.15);"
+        {% endif %}
+      >
+        <td>{{ log.id }}</td>
+        <td>{{ log.user.username }}</td>
+        <td><b>{{ log.action }}</b></td>
+        <td>{{ log.ip_address|default:"—" }}</td>
+        <td>{{ log.timestamp|date:"d M Y, H:i" }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" style="text-align:center;color:#94a3b8">
+          No logs found
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

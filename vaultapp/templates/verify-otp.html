@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>FogVault — Verify OTP</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body{
+      margin:0;
+      font-family:Inter, system-ui, sans-serif;
+      background:linear-gradient(180deg,#eef4ff,#f6f8fb);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .container{
+      width:100%;
+      max-width:420px;
+      padding:20px;
+      text-align:center;
+    }
+
+    .logo{font-size:42px;margin-bottom:10px}
+    h1{margin:0;font-size:26px;font-weight:800}
+    .subtitle{color:#6b7280;margin:8px 0 28px;font-size:14px}
+
+    .card{
+      background:white;
+      padding:26px;
+      border-radius:16px;
+      box-shadow:0 16px 40px rgba(0,0,0,0.08);
+      text-align:left;
+    }
+
+    label{
+      font-size:13px;
+      font-weight:600;
+      color:#374151;
+      margin-top:14px;
+      display:block;
+    }
+
+    input{
+      width:100%;
+      padding:12px;
+      border-radius:10px;
+      border:1px solid #d1d5db;
+      margin-top:6px;
+      font-size:18px;
+      letter-spacing:6px;
+      text-align:center;
+    }
+
+    button{
+      width:100%;
+      margin-top:22px;
+      padding:13px;
+      background:#2563eb;
+      color:white;
+      border:none;
+      border-radius:12px;
+      font-weight:800;
+      font-size:15px;
+      cursor:pointer;
+    }
+
+    button:hover{background:#1e40af}
+
+    .msg{
+      margin-top:12px;
+      font-size:13px;
+      text-align:center;
+      color:#b00020;
+    }
+
+    .resend{
+      margin-top:14px;
+      font-size:13px;
+      text-align:center;
+      color:#6b7280;
+    }
+
+    .resend span{
+      font-weight:700;
+      color:#2563eb;
+    }
+
+    .link{
+      margin-top:16px;
+      font-size:13px;
+      text-align:center;
+    }
+
+    .link a{
+      color:#2563eb;
+      text-decoration:none;
+      font-weight:700;
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+  <div class="logo">☁️</div>
+  <h1>Verify OTP</h1>
+  <div class="subtitle">Enter the 6-digit code sent to your email</div>
+
+  <div class="card">
+    <form method="POST">
+      {% csrf_token %}
+
+      <label>OTP Code</label>
+      <input name="otp" maxlength="6" required placeholder="••••••">
+
+      <button type="submit">Verify OTP</button>
+    </form>
+
+    {% if error %}
+      <div class="msg">{{ error }}</div>
+    {% endif %}
+
+    <!-- UPDATED RESEND SECTION -->
+    <div class="resend">
+      <span id="timer-text">Resend OTP in <span id="seconds">60</span>s</span>
+      <a href="#" id="resend-btn" style="display:none;font-weight:700;">Resend OTP</a>
+    </div>
+
+    <div class="link">
+      <a href="/login/">Back to login</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  let seconds = 60;
+  const secondsSpan = document.getElementById("seconds");
+  const timerText = document.getElementById("timer-text");
+  const resendBtn = document.getElementById("resend-btn");
+
+  const timer = setInterval(() => {
+    seconds--;
+    secondsSpan.innerText = seconds;
+
+    if (seconds <= 0) {
+      clearInterval(timer);
+      timerText.style.display = "none";
+      resendBtn.style.display = "inline";
+    }
+  }, 1000);
+
+  resendBtn.addEventListener("click", function(e){
+    e.preventDefault();
+    resendBtn.innerText = "Sending...";
+    resendBtn.style.pointerEvents = "none";
+
+    fetch("/resend-otp/")
+      .then(() => location.reload())
+      .catch(() => {
+        resendBtn.innerText = "Wait...";
+      });
+  });
+</script>
+
+</body>
+</html>

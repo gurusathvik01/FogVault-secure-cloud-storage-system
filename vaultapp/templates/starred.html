@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}FogVault — Starred{% endblock %}
+
+{% block content %}
+<div class="card">
+
+  <h2> Starred Files</h2>
+  <p class="muted">Your important files</p>
+
+  {% if files %}
+    {% for f in files %}
+      <div class="file-row">
+        <div>
+          <strong>{{ f.file.name|cut:"secure_files/" }}</strong><br>
+          <span class="muted">{{ f.uploaded_at|date:"d M Y, h:i A" }}</span>
+        </div>
+
+        <div class="actions">
+          <a class="open" href="{{ f.file.url }}" target="_blank">Open</a>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="muted">No starred files yet.</p>
+  {% endif %}
+
+</div>
+{% endblock %}
+files = SecureFile.objects.filter(
+    user=request.user,
+    is_starred=True,
+    is_deleted=False
+)

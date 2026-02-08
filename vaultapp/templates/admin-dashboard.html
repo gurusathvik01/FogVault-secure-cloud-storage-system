@@ -1,0 +1,159 @@
+{% extends "admin-base.html" %}
+
+{% block title %}Admin — Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- FILTER BUTTONS -->
+<div style="margin-bottom:20px; display:flex; gap:10px">
+  <a href="?days=7"><button>Last 7 Days</button></a>
+  <a href="?days=30"><button>Last 30 Days</button></a>
+</div>
+
+<!-- ========================= -->
+<!-- 🔥 RISK INTELLIGENCE -->
+<!-- ========================= -->
+<div class="stats-grid">
+  <div class="stat-card danger">
+    🔥 High Risk Users
+    <h2>{{ high_risk_users }}</h2>
+  </div>
+
+  <div class="stat-card warning">
+    🚫 Auto Disabled
+    <h2>{{ auto_disabled }}</h2>
+  </div>
+
+  <div class="stat-card alert">
+    ⚠️ Suspicious Days
+    <h2>{{ suspicious_days }}</h2>
+  </div>
+
+  <div class="stat-card info">
+    📈 Avg Risk Score
+    <h2>{{ avg_risk }}</h2>
+  </div>
+</div>
+
+<br>
+
+<!-- ========================= -->
+<!-- 👥 TOP RISKY USERS -->
+<!-- ========================= -->
+<div class="card">
+  <h3>🔥 Top 5 Risky Users</h3>
+  <ul>
+    {% for r in top_risky_users %}
+      <li>
+        {{ r.user.username }} —
+        <b>{{ r.level }}</b> ({{ r.score }})
+      </li>
+    {% empty %}
+      <li>No risk data available</li>
+    {% endfor %}
+  </ul>
+</div>
+
+<br>
+
+<!-- ========================= -->
+<!-- 📊 SYSTEM ACTIVITY -->
+<!-- ========================= -->
+<div class="card">
+  <h2>System Activity</h2>
+  <p style="color:#64748b;font-size:14px">
+    Uploads, Deletes & Logins (Last {{ request.GET.days|default:"30" }} Days)
+  </p>
+
+  <canvas id="stackedChart" height="140"></canvas>
+</div>
+
+<!-- SAFE DATA -->
+{{ chart_dates|json_script:"chart-dates" }}
+{{ upload_counts|json_script:"upload-counts" }}
+{{ delete_counts|json_script:"delete-counts" }}
+{{ login_counts|json_script:"login-counts" }}
+
+<!-- HEATMAP DATA -->
+{{ heatmap_labels|json_script:"heatmap-labels" }}
+{{ heatmap_scores|json_script:"heatmap-scores" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+(() => {
+  /* ===== SYSTEM ACTIVITY ===== */
+  const labels  = JSON.parse(document.getElementById("chart-dates").textContent);
+  const uploads = JSON.parse(document.getElementById("upload-counts").textContent);
+  const deletes = JSON.parse(document.getElementById("delete-counts").textContent);
+  const logins  = JSON.parse(document.getElementById("login-counts").textContent);
+
+  const ctx = document.getElementById("stackedChart");
+  if (ctx) {
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [
+          { label: "Uploads", data: uploads, backgroundColor: "#22c55e" },
+          { label: "Deletes", data: deletes, backgroundColor: "#ef4444" },
+          { label: "Logins",  data: logins,  backgroundColor: "#3b82f6" }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: "top" } },
+        scales: {
+          x: { stacked: true },
+          y: { stacked: true, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  /* ===== RISK HEATMAP ===== */
+  const heatmapLabels = JSON.parse(
+    document.getElementById("heatmap-labels").textContent
+  );
+  const heatmapScores = JSON.parse(
+    document.getElementById("heatmap-scores").textContent
+  );
+
+  const heatmapCtx = document.getElementById("heatmap");
+  if (heatmapCtx) {
+    new Chart(heatmapCtx, {
+      type: "bar",
+      data: {
+        labels: heatmapLabels,
+        datasets: [{
+          data: heatmapScores,
+          backgroundColor: heatmapScores.map(v =>
+            v >= 10 ? "#ef4444" : "#f59e0b"
+          )
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+})();
+</script>
+
+<br>
+
+<!-- ========================= -->
+<!-- 🛡️ SYSTEM HEALTH -->
+<!-- ========================= -->
+<div class="card">
+  <h3>🛡️ System Health</h3>
+  <ul>
+    <li>📦 Storage Used: {{ storage_used }} files</li>
+    <li>🕒 Last Backup: {{ last_backup }}</li>
+    <li>🔐 Integrity Status: {{ integrity_status }}</li>
+  </ul>
+</div>
+
+{% endblock %}

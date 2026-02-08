@@ -1,0 +1,173 @@
+{% extends "admin-base.html" %}
+{% load risk_extras %}
+{% block title %}Admin — Users{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Users</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Risk</th>
+        <th>Created</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <!-- USERNAME -->
+        <td>{{ user.username }}</td>
+
+        <!-- EMAIL -->
+        <td>{{ user.email }}</td>
+
+        <!-- ROLE -->
+        <td>{% if user.is_staff %}admin{% else %}user{% endif %}</td>
+
+        <!-- RISK -->
+        <td>
+          {% with risk=risk_map|get_item:user.id %}
+            {% if risk.level == "LOW" %}
+              <span style="color:#22c55e;font-weight:600">
+                🟢 LOW ({{ risk.score }})
+              </span>
+            {% elif risk.level == "MEDIUM" %}
+              <span style="color:#f59e0b;font-weight:600">
+                🟡 MEDIUM ({{ risk.score }})
+              </span>
+            {% else %}
+              <span style="color:#ef4444;font-weight:600">
+                🔴 HIGH ({{ risk.score }})
+              </span>
+            {% endif %}
+          {% endwith %}
+        </td>
+
+        <!-- CREATED -->
+        <td>{{ user.date_joined|date:"d/m/Y" }}</td>
+
+        <!-- ACTIONS (SINGLE CLEAN COLUMN) -->
+        <td style="display:flex;flex-wrap:wrap;gap:6px">
+
+          <!-- ENABLE / DISABLE -->
+          {% if user.is_active %}
+            <a href="{% url 'admin_disable_user' user.id %}">
+              <button style="background:#f59e0b;color:white">Disable</button>
+            </a>
+          {% else %}
+            <a href="{% url 'admin_enable_user' user.id %}">
+              <button style="background:#22c55e;color:white">Enable</button>
+            </a>
+          {% endif %}
+
+          <!-- FORCE LOGOUT -->
+          <a href="{% url 'admin_force_logout' user.id %}">
+            <button style="background:#6366f1;color:white">🔄 Logout</button>
+          </a>
+
+          <!-- TEMP DISABLE -->
+          <a href="{% url 'admin_temp_disable' user.id 1 %}">
+            <button style="background:#fb7185;color:white">⏳ 24h</button>
+          </a>
+
+          <a href="{% url 'admin_temp_disable' user.id 7 %}">
+            <button style="background:#be123c;color:white">⏳ 7d</button>
+          </a>
+
+          <!-- FLAG USER -->
+          <a href="{% url 'admin_flag_user' user.id %}">
+            <button style="background:#dc2626;color:white">🚨 Flag</button>
+          </a>
+
+          <!-- RISK PROFILE -->
+          <a href="{% url 'admin_user_risk' user.id %}">
+            <button style="background:#2563eb;color:white">📈 Risk</button>
+          </a>
+
+          <!-- DELETE -->
+          <button
+            style="background:#ef4444;color:white"
+            onclick="openDeleteModal('{{ user.id }}','{{ user.username }}')">
+            Delete
+          </button>
+
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- DELETE MODAL -->
+<div id="deleteModal" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  z-index:9999;
+">
+  <div style="
+    background:#020617;
+    color:white;
+    width:400px;
+    margin:10% auto;
+    padding:20px;
+    border-radius:12px;
+  ">
+    <h3 style="color:#ef4444">⚠ Delete User</h3>
+    <p>Type <b id="confirmUsername"></b> to confirm</p>
+
+    <input id="confirmInput"
+           type="text"
+           style="width:100%;padding:8px"
+           oninput="checkConfirm()">
+
+    <div style="margin-top:15px;text-align:right">
+      <button onclick="closeDeleteModal()">Cancel</button>
+      <a id="deleteLink">
+        <button id="confirmDeleteBtn"
+                disabled
+                style="background:#ef4444;color:white;opacity:0.4">
+          Confirm Delete
+        </button>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+let targetUsername = "";
+
+function openDeleteModal(id, username) {
+  targetUsername = username;
+  document.getElementById("confirmUsername").innerText = username;
+  document.getElementById("confirmInput").value = "";
+  document.getElementById("deleteLink").href =
+    `/admin-panel/user/delete/${id}/`;
+  document.getElementById("confirmDeleteBtn").disabled = true;
+  document.getElementById("confirmDeleteBtn").style.opacity = "0.4";
+  document.getElementById("deleteModal").style.display = "block";
+}
+
+function closeDeleteModal() {
+  document.getElementById("deleteModal").style.display = "none";
+}
+
+function checkConfirm() {
+  const btn = document.getElementById("confirmDeleteBtn");
+  if (document.getElementById("confirmInput").value === targetUsername) {
+    btn.disabled = false;
+    btn.style.opacity = "1";
+  } else {
+    btn.disabled = true;
+    btn.style.opacity = "0.4";
+  }
+}
+</script>
+{% endblock %}

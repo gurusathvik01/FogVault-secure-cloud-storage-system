@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+{% block title %}FogVault — Files{% endblock %}
+
+{% block content %}
+
+<meta name="csrf-token" content="{{ csrf_token }}">
+
+<div class="card">
+
+  <h2>Your Files</h2>
+  <p class="muted">All active files in your vault</p>
+
+  <!-- Search + Toggle -->
+  <div style="display:flex;gap:10px;margin:14px 0">
+    <input id="search"
+           placeholder="Search files..."
+           style="flex:1;padding:10px;border-radius:8px;border:1px solid #dbeafe">
+
+    <button id="toggleBtn"
+            style="padding:10px 14px;border-radius:8px;border:1px solid #dbeafe;
+                   background:#fff;font-weight:600">
+      🟦 Toggle
+    </button>
+  </div>
+
+  <!-- BULK ACTION BAR -->
+  <div id="bulkBar"
+       style="display:none;
+              background:#eef2ff;
+              padding:10px;
+              border-radius:10px;
+              margin-bottom:14px;
+              align-items:center;
+              gap:10px">
+
+    <strong id="selectedCount">0 selected</strong>
+
+    <button onclick="bulkDelete()"
+            class="delete"
+            style="margin-left:auto">
+      🗑 Delete
+    </button>
+
+    <button onclick="bulkStar()">⭐ Star</button>
+  </div>
+
+  {% if files %}
+  <div id="files">
+
+    <!-- SELECT ALL -->
+    <div class="file-row" style="font-weight:600">
+      <input type="checkbox" id="selectAll" style="margin-right:10px">
+      Select all
+    </div>
+
+    {% for f in files %}
+    {% with f.file.name|lower as fname %}
+    <div class="file-row item">
+
+      <!-- BULK CHECK -->
+      <input type="checkbox"
+             class="bulk-check"
+             value="{{ f.id }}"
+             style="margin-right:10px">
+
+      <!-- PREVIEW -->
+      <div style="display:flex;align-items:center;gap:14px">
+
+        {% if ".jpg" in fname or ".jpeg" in fname or ".png" in fname or ".gif" in fname %}
+          <img src="{{ f.file.url }}"
+               style="width:48px;height:48px;border-radius:8px;
+                      object-fit:cover;border:1px solid #e5e7eb">
+
+        {% elif ".mp4" in fname or ".webm" in fname or ".mov" in fname %}
+          <span class="video-icon" data-video="{{ f.file.url }}">
+            🎥 <span class="duration">--:--</span>
+          </span>
+
+        {% elif ".pdf" in fname %}
+          <div style="width:48px;height:48px;border-radius:8px;
+                      overflow:hidden;border:1px solid #e5e7eb">
+            <embed src="{{ f.file.url }}#page=1"
+                   type="application/pdf"
+                   style="width:100%;height:100%">
+          </div>
+
+        {% elif ".zip" in fname or ".rar" in fname or ".7z" in fname %}
+          <span style="font-size:26px">🗜️</span>
+
+        {% else %}
+          <span style="font-size:26px">📁</span>
+        {% endif %}
+
+        <!-- FILE INFO + INTEGRITY -->
+        <div>
+          <strong>{{ f.file.name|cut:"secure_files/" }}</strong><br>
+
+          <span class="muted">
+            {{ f.uploaded_at|date:"d M Y, h:i A" }}
+          </span><br>
+
+          {% if f.integrity_verified %}
+            <span style="color:#16a34a;font-size:13px;font-weight:600">
+              ✔ Integrity verified
+            </span>
+          {% else %}
+            <span style="color:#dc2626;font-size:13px;font-weight:600">
+              ⚠ Integrity compromised
+            </span>
+          {% endif %}
+
+          <details style="margin-top:4px">
+            <summary style="cursor:pointer;font-size:12px;color:#2563eb">
+              View file hash
+            </summary>
+            <code style="font-size:11px;word-break:break-all">
+              {{ f.sha256 }}
+            </code>
+          </details>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="actions">
+
+        <a href="#"
+           class="star-btn"
+           data-id="{{ f.id }}"
+           style="font-size:18px;text-decoration:none">
+          {% if f.is_starred %}⭐{% else %}☆{% endif %}
+        </a>
+
+        <!-- AUDIT SAFE OPEN -->
+        <a class="open"
+           href="{% url 'open_file' f.id %}"
+           target="_blank">
+          Open
+        </a>
+
+        <a href="#"
+           class="delete delete-btn"
+           data-url="{% url 'move_to_trash' f.id %}">
+          Delete
+        </a>
+      </div>
+
+    </div>
+    {% endwith %}
+    {% endfor %}
+
+  </div>
+  {% else %}
+    <p class="muted">No files uploaded yet.</p>
+  {% endif %}
+
+</div>
+
+<script>
+const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+const toggleBtn = document.getElementById("toggleBtn");
+const selectAll = document.getElementById("selectAll");
+
+/* SEARCH */
+document.getElementById("search").addEventListener("keyup", e => {
+  document.querySelectorAll(".item").forEach(el => {
+    el.style.display =
+      el.innerText.toLowerCase().includes(e.target.value.toLowerCase())
+      ? "flex" : "none";
+  });
+});
+
+/* GRID */
+let grid = false;
+toggleBtn.addEventListener("click", () => {
+  const box = document.getElementById("files");
+  grid = !grid;
+  box.style.display = grid ? "grid" : "block";
+  box.style.gridTemplateColumns = grid ? "repeat(3,1fr)" : "";
+});
+
+/* VIDEO DURATION */
+document.querySelectorAll(".video-icon").forEach(icon => {
+  const v = document.createElement("video");
+  v.src = icon.dataset.video;
+  v.preload = "metadata";
+  v.onloadedmetadata = () => {
+    const d = Math.floor(v.duration);
+    icon.querySelector(".duration").innerText =
+      `${Math.floor(d/60)}:${String(d%60).padStart(2,"0")}`;
+  };
+});
+
+/* SINGLE STAR */
+document.querySelectorAll(".star-btn").forEach(btn => {
+  btn.addEventListener("click", async e => {
+    e.preventDefault();
+    const res = await fetch(`/star/${btn.dataset.id}/`, {
+      method: "POST",
+      headers: { "X-CSRFToken": csrfToken }
+    });
+    const data = await res.json();
+    btn.innerText = data.starred ? "⭐" : "☆";
+  });
+});
+
+/* BULK UI */
+const bulkBar = document.getElementById("bulkBar");
+const countText = document.getElementById("selectedCount");
+
+function updateBulkUI(){
+  const checked = document.querySelectorAll(".bulk-check:checked");
+  bulkBar.style.display = checked.length ? "flex" : "none";
+  countText.innerText = `${checked.length} selected`;
+}
+
+document.querySelectorAll(".bulk-check").forEach(cb =>
+  cb.addEventListener("change", updateBulkUI)
+);
+
+/* SELECT ALL */
+selectAll.addEventListener("change", () => {
+  document.querySelectorAll(".bulk-check").forEach(cb => {
+    cb.checked = selectAll.checked;
+  });
+  updateBulkUI();
+});
+
+/* BULK STAR */
+async function bulkStar(){
+  const ids = [...document.querySelectorAll(".bulk-check:checked")].map(cb => cb.value);
+  if(!ids.length) return;
+
+  await fetch("/bulk/star/", {
+    method:"POST",
+    headers:{
+      "X-CSRFToken": csrfToken,
+      "Content-Type":"application/x-www-form-urlencoded"
+    },
+    body: ids.map(id => `ids[]=${id}`).join("&")
+  });
+  location.reload();
+}
+
+/* SINGLE DELETE */
+document.querySelectorAll(".delete-btn").forEach(btn => {
+  btn.addEventListener("click", e => {
+    e.preventDefault();
+    openModal(
+      "Move to Trash",
+      "Are you sure you want to move this file to Trash?",
+      btn.dataset.url,
+      true
+    );
+  });
+});
+
+/* BULK DELETE */
+function bulkDelete(){
+  const ids = [...document.querySelectorAll(".bulk-check:checked")].map(cb => cb.value);
+  if(!ids.length) return;
+
+  openModal(
+    "Delete Files",
+    `Move ${ids.length} files to Trash?`,
+    "#",
+    true
+  );
+
+  document.getElementById("modal-action").onclick = async () => {
+    await fetch("/bulk/delete/", {
+      method:"POST",
+      headers:{
+        "X-CSRFToken": csrfToken,
+        "Content-Type":"application/x-www-form-urlencoded"
+      },
+      body: ids.map(id => `ids[]=${id}`).join("&")
+    });
+    location.reload();
+  };
+}
+</script>
+
+<style>
+.video-icon{display:flex;gap:6px;font-weight:600}
+.duration{font-size:13px;color:#6b7280}
+</style>
+
+{% endblock %}
