@@ -78,8 +78,14 @@ venv\Scripts\activate
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver
+```
+```bash
 Open browser:
 http://127.0.0.1:8000/
+```
+
+---
+
 
 🛡️ Security Highlights
 No user account is created until OTP verification is complete
@@ -87,12 +93,16 @@ Temporary data stored securely in sessions
 OTP attempts and expiry enforced
 Sensitive actions are fully audited
 
+---
+
 🎯 Purpose of This Project
 This project was built to:
 Demonstrate real-world backend development skills
 Showcase secure authentication flows
 Apply cloud and fog computing concepts
 Prepare for backend / cloud / security roles
+
+---
 
 📌 Author
 Koduru Guru Sathvik
