@@ -37,6 +37,49 @@ from vaultapp.models import SecureFile
 from vaultapp.utils import admin_required
 from django.contrib.auth.decorators import login_required
 from .models import SecureFile, AuditLog, UserSecurity
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.decorators import login_required
+from .models import SecureFile, AuditLog
+
+
+@login_required
+def admin_trash(request):
+    files = SecureFile.objects.filter(is_deleted=True)
+    return render(request, "admin-trash.html", {
+        "files": files
+    })
+
+
+@login_required
+def admin_restore_file(request, file_id):
+    file = get_object_or_404(SecureFile, id=file_id)
+
+    file.is_deleted = False
+    file.deleted_at = None
+    file.deleted_by = None
+    file.save()
+
+    AuditLog.objects.create(
+        user=request.user,
+        file=file,
+        action="RESTORE"
+    )
+
+    return redirect("admin_trash")
+
+
+@login_required
+def admin_permanent_delete(request, file_id):
+    file = get_object_or_404(SecureFile, id=file_id)
+
+    AuditLog.objects.create(
+        user=request.user,
+        file=file,
+        action="PERMANENT_DELETE"
+    )
+
+    file.delete()
+    return redirect("admin_trash")
 
 
 @login_required

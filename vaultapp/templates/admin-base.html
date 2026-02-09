@@ -7,118 +7,166 @@
 
 <style>
 *{box-sizing:border-box}
+
 body{
   margin:0;
   font-family:Inter,system-ui;
-  background:#020617;
+  background:
+    radial-gradient(circle at 20% 20%, #0b1220 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, #020617 0%, transparent 45%),
+    #020617;
   color:#e5e7eb;
 }
 
-/* TOP BAR */
+/* ===== TOP BAR ===== */
 .topbar{
   height:64px;
   display:flex;
   align-items:center;
-  padding:0 24px;
-  background:#020617;
-  border-bottom:1px solid #1e293b;
+  padding:0 28px;
+  background:rgba(2,6,23,.88);
+  border-bottom:1px solid rgba(148,163,184,.12);
+  backdrop-filter:blur(8px);
 }
 
 .brand{
-  font-weight:800;
   display:flex;
-  gap:10px;
   align-items:center;
+  gap:10px;
+  font-weight:800;
+  letter-spacing:.3px;
 }
 
+.brand span{
+  color:#ef4444;
+}
+
+/* NAV */
 .nav-links{
-  margin-left:30px;
+  margin-left:36px;
   display:flex;
-  gap:20px;
+  gap:22px;
 }
 
 .nav-links a{
   color:#94a3b8;
   text-decoration:none;
   font-weight:600;
+  font-size:14px;
 }
-.nav-links a.active{color:#38bdf8}
 
+.nav-links a.active,
+.nav-links a:hover{
+  color:#e5e7eb;
+}
+
+/* RIGHT */
 .right{
   margin-left:auto;
 }
+
 .logout{
-  background:#ef4444;
+  background:linear-gradient(180deg,#ef4444,#dc2626);
   color:white;
   padding:8px 14px;
-  border-radius:8px;
+  border-radius:10px;
   text-decoration:none;
   font-weight:600;
+  font-size:13px;
+  box-shadow:0 8px 24px rgba(239,68,68,.35);
 }
 
-/* PAGE */
+/* ===== PAGE ===== */
 .container{
   padding:28px;
   max-width:1400px;
   margin:auto;
 }
 
-/* CARDS */
+/* ===== CARDS ===== */
 .card{
-  background:#020617;
-  border:1px solid #1e293b;
-  border-radius:16px;
+  background:rgba(2,6,23,.88);
+  border:1px solid rgba(148,163,184,.12);
+  border-radius:14px;
   padding:20px;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.6),
+    inset 0 1px 0 rgba(255,255,255,.03);
 }
+
+/* GRID */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
   gap:20px;
 }
 
-/* TABLE */
+/* ===== TABLE ===== */
 table{
   width:100%;
   border-collapse:collapse;
 }
+
 th,td{
   padding:14px;
-  border-bottom:1px solid #1e293b;
+  border-bottom:1px solid rgba(148,163,184,.12);
   text-align:left;
 }
+
 th{
   color:#94a3b8;
-  font-size:13px;
+  font-size:12px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.04em;
 }
-tr:hover{background:#020617}
 
-/* BUTTONS */
+tr:hover{
+  background:rgba(255,255,255,.02);
+}
+
+/* ===== BUTTONS ===== */
 .btn{
   padding:6px 12px;
   border-radius:8px;
   font-weight:600;
+  font-size:13px;
   border:none;
   cursor:pointer;
 }
-.btn-danger{background:#7f1d1d;color:#fecaca}
-.btn-success{background:#064e3b;color:#6ee7b7}
-.btn-dark{background:#020617;color:#e5e7eb;border:1px solid #1e293b}
+
+.btn-danger{
+  background:#7f1d1d;
+  color:#fecaca;
+}
+
+.btn-success{
+  background:#064e3b;
+  color:#6ee7b7;
+}
+
+.btn-dark{
+  background:transparent;
+  color:#e5e7eb;
+  border:1px solid rgba(148,163,184,.18);
+}
 </style>
 </head>
 
 <body>
 
+<!-- TOP BAR -->
 <div class="topbar">
-  <div class="brand">🛡 FogVault Admin</div>
+  <div class="brand">
+    🔒 <span>FogVault</span> Admin
+  </div>
 
   <div class="nav-links">
     <a href="/admin-panel/dashboard/">Overview</a>
-<a href="/admin-panel/users/">Users</a>
-<a href="/admin-panel/logs/">Logs</a>
-<a href="/admin-panel/trash/">Trash</a>
-<a href="/admin-panel/audit/">Audit</a>
-
-
+    <a href="/admin-panel/users/">Users</a>
+    <a href="/admin-panel/logs/">Logs</a>
+    <a href="/admin-panel/trash/">Trash</a>
+    <a href="/admin-panel/audit/">Audit</a>
   </div>
 
   <div class="right">
@@ -126,6 +174,7 @@ tr:hover{background:#020617}
   </div>
 </div>
 
+<!-- PAGE CONTENT -->
 <div class="container">
   {% block content %}{% endblock %}
 </div>

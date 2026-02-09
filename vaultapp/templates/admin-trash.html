@@ -3,11 +3,15 @@
 
 {% block content %}
 <div class="card">
-  <h2>🗑 Trash — Data Safety</h2>
 
-  <table>
+  <h2>🗑 Admin Trash — Data Safety</h2>
+  <p class="muted">
+    Files deleted by users appear here. Admins can restore or permanently delete them.
+  </p>
+
+  <table style="width:100%;border-collapse:collapse;margin-top:16px">
     <thead>
-      <tr>
+      <tr style="text-align:left;border-bottom:1px solid #334155">
         <th>File</th>
         <th>Deleted By</th>
         <th>Deleted At</th>
@@ -17,27 +21,63 @@
 
     <tbody>
       {% for f in files %}
-      <tr>
+      <tr style="border-bottom:1px solid #1e293b">
         <td>{{ f.file.name }}</td>
-        <td>{{ f.deleted_by.username|default:"Unknown" }}</td>
-        <td>{{ f.deleted_at|date:"d M Y, H:i" }}</td>
+
         <td>
+          {{ f.deleted_by.username|default:"Unknown" }}
+        </td>
+
+        <td>
+          {{ f.deleted_at|date:"d M Y, H:i" }}
+        </td>
+
+        <td style="display:flex;gap:8px">
+
+          <!-- RESTORE -->
           <a href="{% url 'admin_restore_file' f.id %}">
-            <button style="background:#22c55e;color:white">Restore</button>
+            <button
+              style="
+                background:#22c55e;
+                color:white;
+                border:none;
+                padding:6px 12px;
+                border-radius:6px;
+                cursor:pointer
+              ">
+              Restore
+            </button>
           </a>
-          <a href="{% url 'admin_permanent_delete' f.id %}">
-            <button style="background:#ef4444;color:white">Delete Forever</button>
+
+          <!-- PERMANENT DELETE -->
+          <a href="{% url 'admin_permanent_delete' f.id %}"
+             onclick="return confirm('This will permanently delete the file. Continue?')">
+            <button
+              style="
+                background:#ef4444;
+                color:white;
+                border:none;
+                padding:6px 12px;
+                border-radius:6px;
+                cursor:pointer
+              ">
+              Delete Forever
+            </button>
           </a>
+
         </td>
       </tr>
+
       {% empty %}
       <tr>
-        <td colspan="4" style="text-align:center;color:#94a3b8">
+        <td colspan="4"
+            style="text-align:center;color:#94a3b8;padding:16px">
           Trash is empty
         </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
+
 </div>
 {% endblock %}

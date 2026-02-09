@@ -1,6 +1,9 @@
 from django.urls import path
 from . import admin_views
 from .admin_views import admin_logs
+from django.urls import path
+from . import admin_views
+
 
 urlpatterns = [
     # Auth
@@ -50,5 +53,19 @@ path(
     name="admin_flag_user"
 ),
 path("logs/", admin_logs, name="admin_logs"),
+
+ path("trash/", admin_views.admin_trash, name="admin_trash"),
+
+    path(
+        "trash/restore/<int:file_id>/",
+        admin_views.admin_restore_file,
+        name="admin_restore_file"
+    ),
+
+    path(
+        "trash/permanent-delete/<int:file_id>/",
+        admin_views.admin_permanent_delete,
+        name="admin_permanent_delete"
+    ),
 
 ]

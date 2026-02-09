@@ -4,6 +4,8 @@ from django.urls import path
 from . import views
 
 from django.views.generic import TemplateView
+from django.urls import path, include
+
 
  
 urlpatterns = [
@@ -41,6 +43,6 @@ path("reset-success/", TemplateView.as_view(
 
 path("set-password/", views.set_password, name="set_password"),
 path("open/<int:file_id>/", views.open_file, name="open_file"),
-
+path("admin-panel/", include("vaultapp.admin_urls")),
 
 ]
